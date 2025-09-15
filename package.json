@@ -33,6 +33,10 @@
   },
   "packageManager": "npm@9.8.1",
   "dependencies": {
-    "@fastify/static": "^7.0.4"
+    "@fastify/static": "^7.0.4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2"
   }
 }

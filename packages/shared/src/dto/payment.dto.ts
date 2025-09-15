@@ -2,24 +2,6 @@ import { IsString, IsNumber, IsArray, IsEnum, IsObject, IsOptional, Min } from '
 import { Type } from 'class-transformer';
 import { PaymentMethod } from '../types/payment.types';
 
-export class CreateOrderDto {
-  @IsArray()
-  @Type(() => OrderItemDto)
-  items: OrderItemDto[];
-
-  @IsObject()
-  @Type(() => ShippingAddressDto)
-  shippingAddress: ShippingAddressDto;
-
-  @IsOptional()
-  @IsObject()
-  @Type(() => BillingAddressDto)
-  billingAddress?: BillingAddressDto;
-
-  @IsEnum(PaymentMethod)
-  paymentMethod: PaymentMethod;
-}
-
 export class OrderItemDto {
   @IsString()
   productId: string;
@@ -57,6 +39,24 @@ export class ShippingAddressDto {
 }
 
 export class BillingAddressDto extends ShippingAddressDto {}
+
+export class CreateOrderDto {
+  @IsArray()
+  @Type(() => OrderItemDto)
+  items: OrderItemDto[];
+
+  @IsObject()
+  @Type(() => ShippingAddressDto)
+  shippingAddress: ShippingAddressDto;
+
+  @IsOptional()
+  @IsObject()
+  @Type(() => BillingAddressDto)
+  billingAddress?: BillingAddressDto;
+
+  @IsEnum(PaymentMethod)
+  paymentMethod: PaymentMethod;
+}
 
 export class ProcessPaymentDto {
   @IsString()
