@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id              String            @id @default(cuid())
+  name            String
+  description     String
+  price           Decimal           @db.Decimal(10, 2)
+  currency        String            @default("USD")
+  sku             String            @unique
+  categoryId      String            @map("category_id")
+  images          String[]
+  specifications  Json?
+  status          ProductStatus     @default(ACTIVE)
+  tags            String[]
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  category        ProductCategory   @relation(fields: [categoryId], references: [id])
+  inventory       ProductInventory?
+
+  @@map("products")
+}
+
+model ProductCategory {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String
+  parentId    String?   @map("parent_id")
+  slug        String    @unique
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  parent      ProductCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    ProductCategory[] @relation("CategoryHierarchy")
+  products    Product[]
+
+  @@map("product_categories")
+}
+
+model ProductInventory {
+  id                String   @id @default(cuid())
+  productId         String   @unique @map("product_id")
+  quantity          Int      @default(0)
+  reserved          Int      @default(0)
+  available         Int      @default(0)
+  lowStockThreshold Int      @default(10) @map("low_stock_threshold")
+  isTracked         Boolean  @default(true) @map("is_tracked")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_inventory")
+}
+
+model InventoryTransaction {
+  id          String                    @id @default(cuid())
+  productId   String                    @map("product_id")
+  type        InventoryTransactionType
+  quantity    Int
+  reason      String
+  reference   String?
+  createdAt   DateTime                  @default(now()) @map("created_at")
+
+  @@map("inventory_transactions")
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  DISCONTINUED
+  OUT_OF_STOCK
+}
+
+enum InventoryTransactionType {
+  IN
+  OUT
+  ADJUSTMENT
+  RESERVED
+  RELEASED
+} 

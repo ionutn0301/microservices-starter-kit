@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique @map("user_id")
+  firstName       String    @map("first_name")
+  lastName        String    @map("last_name")
+  email           String    @unique
+  phoneNumber     String?   @map("phone_number")
+  dateOfBirth     DateTime? @map("date_of_birth")
+  avatar          String?
+  bio             String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  address         Address?
+  preferences     UserPreferences?
+
+  @@map("user_profiles")
+}
+
+model Address {
+  id            String      @id @default(cuid())
+  userProfileId String      @unique @map("user_profile_id")
+  street        String
+  city          String
+  state         String
+  country       String
+  postalCode    String      @map("postal_code")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model UserPreferences {
+  id                  String      @id @default(cuid())
+  userProfileId       String      @unique @map("user_profile_id")
+  theme               Theme       @default(SYSTEM)
+  language            String      @default("en")
+  timezone            String      @default("UTC")
+  emailNotifications  Boolean     @default(true) @map("email_notifications")
+  pushNotifications   Boolean     @default(true) @map("push_notifications")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  userProfile         UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+} 

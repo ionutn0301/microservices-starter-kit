@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  # Infrastructure services (from main docker-compose.yml)
+  postgres:
+    extends:
+      file: ./infra/docker-compose.yml
+      service: postgres
+
+  redis:
+    extends:
+      file: ./infra/docker-compose.yml
+      service: redis
+
+  rabbitmq:
+    extends:
+      file: ./infra/docker-compose.yml
+      service: rabbitmq
+
+  adminer:
+    extends:
+      file: ./infra/docker-compose.yml
+      service: adminer
+
+  # Microservices
+  gateway:
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+      target: builder
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      SERVICE_NAME: gateway
+      DATABASE_URL: postgresql://microservices:microservices123@postgres:5432/microservices_db
+      REDIS_HOST: redis
+      RABBITMQ_URL: amqp://microservices:microservices123@rabbitmq:5672
+      JWT_SECRET: dev-jwt-secret-key-min-32-chars-long-for-development
+      JWT_REFRESH_SECRET: dev-refresh-secret-key-min-32-chars-long-for-development
+      AUTH_SERVICE_URL: http://auth-service:3001
+      USER_SERVICE_URL: http://user-service:3002
+      PRODUCT_SERVICE_URL: http://product-service:3003
+      PAYMENT_SERVICE_URL: http://payment-service:3004
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    volumes:
+      - ./apps/gateway/src:/app/src
+    command: npm run dev
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+      target: builder
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      SERVICE_NAME: auth-service
+      DATABASE_URL: postgresql://microservices:microservices123@postgres:5432/auth_service_db
+      REDIS_HOST: redis
+      RABBITMQ_URL: amqp://microservices:microservices123@rabbitmq:5672
+      JWT_SECRET: dev-jwt-secret-key-min-32-chars-long-for-development
+      JWT_REFRESH_SECRET: dev-refresh-secret-key-min-32-chars-long-for-development
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    volumes:
+      - ./apps/auth-service/src:/app/src
+      - ./apps/auth-service/prisma:/app/prisma
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+  user-service:
+    build:
+      context: .
+      dockerfile: apps/user-service/Dockerfile
+      target: builder
+    ports:
+      - "3002:3002"
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      SERVICE_NAME: user-service
+      DATABASE_URL: postgresql://microservices:microservices123@postgres:5432/user_service_db
+      REDIS_HOST: redis
+      RABBITMQ_URL: amqp://microservices:microservices123@rabbitmq:5672
+      JWT_SECRET: dev-jwt-secret-key-min-32-chars-long-for-development
+      JWT_REFRESH_SECRET: dev-refresh-secret-key-min-32-chars-long-for-development
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    volumes:
+      - ./apps/user-service/src:/app/src
+      - ./apps/user-service/prisma:/app/prisma
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+  product-service:
+    build:
+      context: .
+      dockerfile: apps/product-service/Dockerfile
+      target: builder
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: development
+      PORT: 3003
+      SERVICE_NAME: product-service
+      DATABASE_URL: postgresql://microservices:microservices123@postgres:5432/product_service_db
+      REDIS_HOST: redis
+      RABBITMQ_URL: amqp://microservices:microservices123@rabbitmq:5672
+      JWT_SECRET: dev-jwt-secret-key-min-32-chars-long-for-development
+      JWT_REFRESH_SECRET: dev-refresh-secret-key-min-32-chars-long-for-development
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    volumes:
+      - ./apps/product-service/src:/app/src
+      - ./apps/product-service/prisma:/app/prisma
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: apps/payment-service/Dockerfile
+      target: builder
+    ports:
+      - "3004:3004"
+    environment:
+      NODE_ENV: development
+      PORT: 3004
+      SERVICE_NAME: payment-service
+      DATABASE_URL: postgresql://microservices:microservices123@postgres:5432/payment_service_db
+      REDIS_HOST: redis
+      RABBITMQ_URL: amqp://microservices:microservices123@rabbitmq:5672
+      JWT_SECRET: dev-jwt-secret-key-min-32-chars-long-for-development
+      JWT_REFRESH_SECRET: dev-refresh-secret-key-min-32-chars-long-for-development
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    volumes:
+      - ./apps/payment-service/src:/app/src
+      - ./apps/payment-service/prisma:/app/prisma
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+networks:
+  default:
+    name: microservices-network 

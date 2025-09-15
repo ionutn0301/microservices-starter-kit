@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Order {
+  id              String         @id @default(cuid())
+  userId          String         @map("user_id")
+  orderNumber     String         @unique @map("order_number")
+  subtotal        Decimal        @db.Decimal(10, 2)
+  tax             Decimal        @db.Decimal(10, 2)
+  shipping        Decimal        @db.Decimal(10, 2)
+  total           Decimal        @db.Decimal(10, 2)
+  currency        String         @default("USD")
+  status          OrderStatus    @default(PENDING)
+  paymentMethod   PaymentMethod  @map("payment_method")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  items           OrderItem[]
+  payments        Payment[]
+  shippingAddress ShippingAddress?
+  billingAddress  BillingAddress?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String  @map("order_id")
+  productId   String  @map("product_id")
+  productName String  @map("product_name")
+  quantity    Int
+  price       Decimal @db.Decimal(10, 2)
+  total       Decimal @db.Decimal(10, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  orderId         String        @map("order_id")
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD")
+  status          PaymentStatus @default(PENDING)
+  method          PaymentMethod
+  transactionId   String        @unique @map("transaction_id")
+  gatewayResponse Json?         @map("gateway_response")
+  failureReason   String?       @map("failure_reason")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  order           Order         @relation(fields: [orderId], references: [id])
+  refunds         Refund[]
+
+  @@map("payments")
+}
+
+model Refund {
+  id            String      @id @default(cuid())
+  paymentId     String      @map("payment_id")
+  amount        Decimal     @db.Decimal(10, 2)
+  currency      String      @default("USD")
+  reason        String
+  status        RefundStatus @default(PENDING)
+  transactionId String      @unique @map("transaction_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  payment       Payment     @relation(fields: [paymentId], references: [id])
+
+  @@map("refunds")
+}
+
+model ShippingAddress {
+  id         String @id @default(cuid())
+  orderId    String @unique @map("order_id")
+  firstName  String @map("first_name")
+  lastName   String @map("last_name")
+  street     String
+  city       String
+  state      String
+  country    String
+  postalCode String @map("postal_code")
+  phone      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  order      Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("shipping_addresses")
+}
+
+model BillingAddress {
+  id         String @id @default(cuid())
+  orderId    String @unique @map("order_id")
+  firstName  String @map("first_name")
+  lastName   String @map("last_name")
+  street     String
+  city       String
+  state      String
+  country    String
+  postalCode String @map("postal_code")
+  phone      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  order      Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("billing_addresses")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PAYPAL
+  STRIPE
+  BANK_TRANSFER
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+} 
