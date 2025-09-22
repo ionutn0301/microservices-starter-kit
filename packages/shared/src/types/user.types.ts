@@ -1,5 +1,4 @@
 import { BaseEntity } from './common.types';
-import { UserRole } from './auth.types';
 
 export interface UserProfile extends BaseEntity {
   userId: string;

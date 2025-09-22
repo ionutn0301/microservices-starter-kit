@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEmail, IsPhoneNumber, IsDateString, IsObject, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsPhoneNumber, IsDateString, IsObject, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class AddressDto {

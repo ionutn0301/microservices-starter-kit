@@ -5,10 +5,9 @@ module.exports = {
     tsconfigRootDir: __dirname,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
+  plugins: ['@typescript-eslint'],
   extends: [
-    '@typescript-eslint/recommended',
-    'prettier',
+    'eslint:recommended',
   ],
   root: true,
   env: {
@@ -17,10 +16,15 @@ module.exports = {
   },
   ignorePatterns: ['.eslintrc.js', 'dist/', 'node_modules/'],
   rules: {
+    // Basic TypeScript rules without requiring @typescript-eslint/recommended
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    // Basic ESLint rules
+    'no-console': 'off',
+    'no-debugger': 'error',
+    'no-unused-vars': 'off', // Use TypeScript version instead
   },
 };
