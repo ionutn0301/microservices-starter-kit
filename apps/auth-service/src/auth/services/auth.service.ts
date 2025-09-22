@@ -34,7 +34,7 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto): Promise<LoginResponse> {
-    const { email, password, firstName, lastName, role } = registerDto;
+    const { email, password, firstName, lastName } = registerDto;
 
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
@@ -112,7 +112,7 @@ export class AuthService {
 
     try {
       // Verify refresh token
-      const payload = this.jwtService.verify(refreshToken, {
+      this.jwtService.verify(refreshToken, {
         secret: process.env.JWT_REFRESH_SECRET,
       });
 
@@ -269,12 +269,7 @@ export class AuthService {
       },
     });
   }
-
-  private excludePassword(user: PrismaUser): Omit<PrismaUser, 'password'> {
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
-  }
-
+  
   private generateRandomToken(): string {
     return Math.random().toString(36).substring(2, 15) + 
            Math.random().toString(36).substring(2, 15);
