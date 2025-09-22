@@ -12,7 +12,7 @@ COPY packages/config/package.json ./packages/config/
 COPY apps/user-service/package.json ./apps/user-service/
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -39,8 +39,13 @@ RUN adduser --system --uid 1001 nestjs
 
 # Copy built application
 COPY --from=builder --chown=nestjs:nodejs /app/apps/user-service/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nestjs:nodejs /app/apps/user-service/package.json ./package.json
+COPY --from=builder --chown=nestjs:nodejs /app/packages/shared/package.json ./packages/shared/package.json
+COPY --from=builder --chown=nestjs:nodejs /app/packages/config/package.json ./packages/config/package.json
 COPY --from=builder --chown=nestjs:nodejs /app/apps/user-service/prisma ./prisma
+
+# Install only production dependencies
+RUN npm ci --omit=dev && npm cache clean --force
 
 USER nestjs
 
