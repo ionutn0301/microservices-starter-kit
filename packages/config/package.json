@@ -12,7 +12,7 @@
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
-    "@microservices/shared": "workspace:*",
+    "@microservices/shared": "1.0.0",
     "pino": "^8.15.0",
     "pino-pretty": "^10.2.0",
     "dotenv": "^16.3.1",

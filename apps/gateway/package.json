@@ -26,8 +26,8 @@
     "@nestjs/jwt": "^10.1.0",
     "@nestjs/passport": "^10.0.0",
     "@nestjs/microservices": "^10.0.0",
-    "@microservices/shared": "*",
-    "@microservices/config": "*",
+    "@microservices/shared": "1.0.0",
+    "@microservices/config": "1.0.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "class-validator": "^0.14.0",
@@ -66,4 +66,4 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.3"
   }
-} 
+}
