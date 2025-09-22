@@ -112,8 +112,8 @@ jobs:
           file: ./apps/${{ matrix.service }}/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/microservices-${{ matrix.service }}:latest
-            ghcr.io/${{ github.repository_owner }}/microservices-${{ matrix.service }}:${{ github.sha }}
+            ghcr.io/${{ github.actor }}/microservices-${{ matrix.service }}:latest
+            ghcr.io/${{ github.actor }}/microservices-${{ matrix.service }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
