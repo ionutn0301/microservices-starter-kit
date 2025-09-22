@@ -25,7 +25,9 @@ COPY . .
 # Generate Prisma client
 RUN cd apps/auth-service && npx prisma generate
 
-# Build the application
+# Build shared packages first, then the application
+RUN npm run build --workspace=@microservices/shared
+RUN npm run build --workspace=@microservices/config
 RUN npm run build --workspace=auth-service
 
 # Production image

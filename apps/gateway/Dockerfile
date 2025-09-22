@@ -22,7 +22,9 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source code
 COPY . .
 
-# Build the application
+# Build shared packages first, then the application
+RUN npm run build --workspace=@microservices/shared
+RUN npm run build --workspace=@microservices/config
 RUN npm run build --workspace=gateway
 
 # Production image
