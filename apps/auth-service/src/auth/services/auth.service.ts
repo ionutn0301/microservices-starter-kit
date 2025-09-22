@@ -2,7 +2,29 @@ import { Injectable, UnauthorizedException, ConflictException, NotFoundException
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
-import { RegisterDto, LoginDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto } from '@microservices/shared';
+import { RegisterDto, LoginDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto, LoginResponse, User, AuthTokens, UserRole as SharedUserRole } from '@microservices/shared';
+import { UserRole as PrismaUserRole, User as PrismaUser } from '@prisma/client';
+
+// Type mapping between Prisma and shared enums
+const mapPrismaUserToSharedUser = (prismaUser: PrismaUser): Omit<User, 'password'> => {
+  const roleMapping: Record<PrismaUserRole, SharedUserRole> = {
+    ADMIN: SharedUserRole.ADMIN,
+    USER: SharedUserRole.USER,
+    MODERATOR: SharedUserRole.MODERATOR,
+  };
+
+  return {
+    id: prismaUser.id,
+    email: prismaUser.email,
+    firstName: prismaUser.firstName,
+    lastName: prismaUser.lastName,
+    isEmailVerified: prismaUser.isEmailVerified,
+    role: roleMapping[prismaUser.role],
+    lastLoginAt: prismaUser.lastLoginAt,
+    createdAt: prismaUser.createdAt,
+    updatedAt: prismaUser.updatedAt,
+  };
+};
 
 @Injectable()
 export class AuthService {
@@ -11,7 +33,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto): Promise<LoginResponse> {
     const { email, password, firstName, lastName, role } = registerDto;
 
     // Check if user already exists
@@ -33,7 +55,7 @@ export class AuthService {
         password: hashedPassword,
         firstName,
         lastName,
-        role: (role as any) || 'USER',
+        role: PrismaUserRole.USER,
       },
     });
 
@@ -44,12 +66,12 @@ export class AuthService {
     await this.storeRefreshToken(user.id, tokens.refreshToken);
 
     return {
-      user: this.excludePassword(user),
+      user: mapPrismaUserToSharedUser(user),
       tokens,
     };
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<LoginResponse> {
     const { email, password } = loginDto;
 
     // Find user
@@ -80,12 +102,12 @@ export class AuthService {
     await this.storeRefreshToken(user.id, tokens.refreshToken);
 
     return {
-      user: this.excludePassword(user),
+      user: mapPrismaUserToSharedUser(user),
       tokens,
     };
   }
 
-  async refreshToken(refreshTokenDto: RefreshTokenDto) {
+  async refreshToken(refreshTokenDto: RefreshTokenDto): Promise<LoginResponse> {
     const { refreshToken } = refreshTokenDto;
 
     try {
@@ -114,7 +136,7 @@ export class AuthService {
       await this.storeRefreshToken(storedToken.user.id, tokens.refreshToken);
 
       return {
-        user: this.excludePassword(storedToken.user),
+        user: mapPrismaUserToSharedUser(storedToken.user),
         tokens,
       };
     } catch (error) {
@@ -198,7 +220,7 @@ export class AuthService {
     return { message: 'Password reset successfully' };
   }
 
-  async validateUser(userId: string) {
+  async validateUser(userId: string): Promise<Omit<User, 'password'>> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -207,10 +229,10 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    return this.excludePassword(user);
+    return mapPrismaUserToSharedUser(user);
   }
 
-  private async generateTokens(user: any) {
+  private async generateTokens(user: PrismaUser): Promise<AuthTokens> {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -235,7 +257,7 @@ export class AuthService {
     };
   }
 
-  private async storeRefreshToken(userId: string, token: string) {
+  private async storeRefreshToken(userId: string, token: string): Promise<void> {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
@@ -248,7 +270,7 @@ export class AuthService {
     });
   }
 
-  private excludePassword(user: any) {
+  private excludePassword(user: PrismaUser): Omit<PrismaUser, 'password'> {
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
