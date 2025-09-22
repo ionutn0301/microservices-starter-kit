@@ -39,6 +39,7 @@ COPY --from=builder --chown=nestjs:nodejs /app/apps/gateway/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/apps/gateway/package.json ./package.json
 COPY --from=builder --chown=nestjs:nodejs /app/packages/shared/package.json ./packages/shared/package.json
 COPY --from=builder --chown=nestjs:nodejs /app/packages/config/package.json ./packages/config/package.json
+COPY --from=builder --chown=nestjs:nodejs /app/package-lock.json ./package-lock.json
 
 # Install only production dependencies
 RUN npm ci --omit=dev && npm cache clean --force

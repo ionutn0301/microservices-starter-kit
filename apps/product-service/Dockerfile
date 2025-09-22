@@ -42,6 +42,7 @@ COPY --from=builder --chown=nestjs:nodejs /app/apps/product-service/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/apps/product-service/package.json ./package.json
 COPY --from=builder --chown=nestjs:nodejs /app/packages/shared/package.json ./packages/shared/package.json
 COPY --from=builder --chown=nestjs:nodejs /app/packages/config/package.json ./packages/config/package.json
+COPY --from=builder --chown=nestjs:nodejs /app/package-lock.json ./package-lock.json
 COPY --from=builder --chown=nestjs:nodejs /app/apps/product-service/prisma ./prisma
 
 # Install only production dependencies
