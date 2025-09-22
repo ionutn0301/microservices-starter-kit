@@ -14,10 +14,10 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "clean": "turbo run clean",
+    "prisma:generate": "turbo run prisma:generate",
     "docker:up": "docker-compose -f infra/docker-compose.yml up -d",
     "docker:down": "docker-compose -f infra/docker-compose.yml down",
     "docker:logs": "docker-compose -f infra/docker-compose.yml logs -f",
-    "prisma:generate": "turbo run prisma:generate",
     "prisma:migrate": "turbo run prisma:migrate",
     "prisma:studio": "turbo run prisma:studio"
   },
