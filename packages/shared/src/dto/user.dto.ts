@@ -1,5 +1,4 @@
-import { IsString, IsOptional, IsPhoneNumber, IsDateString, IsObject, IsBoolean } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsOptional, IsPhoneNumber, IsDateString, IsBoolean, IsEmail } from 'class-validator';
 
 export class AddressDto {
   @IsString()
@@ -18,10 +17,12 @@ export class AddressDto {
   postalCode: string;
 }
 
+export class CreateAddressDto extends AddressDto {}
+
 export class UserPreferencesDto {
   @IsOptional()
   @IsString()
-  theme?: 'light' | 'dark' | 'system';
+  theme?: 'LIGHT' | 'DARK' | 'SYSTEM';
 
   @IsOptional()
   @IsString()
@@ -38,6 +39,31 @@ export class UserPreferencesDto {
   @IsOptional()
   @IsBoolean()
   pushNotifications?: boolean;
+}
+
+export class UpdateUserPreferencesDto extends UserPreferencesDto {}
+
+export class CreateUserProfileDto {
+  @IsString()
+  firstName: string;
+
+  @IsString()
+  lastName: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsOptional()
+  @IsPhoneNumber()
+  phoneNumber?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dateOfBirth?: string;
+
+  @IsOptional()
+  @IsString()
+  bio?: string;
 }
 
 export class UpdateUserProfileDto {
@@ -60,14 +86,4 @@ export class UpdateUserProfileDto {
   @IsOptional()
   @IsString()
   bio?: string;
-
-  @IsOptional()
-  @IsObject()
-  @Type(() => AddressDto)
-  address?: AddressDto;
-
-  @IsOptional()
-  @IsObject()
-  @Type(() => UserPreferencesDto)
-  preferences?: UserPreferencesDto;
 } 
