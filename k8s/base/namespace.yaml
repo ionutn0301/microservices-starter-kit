@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: microservices
+  labels:
+    app.kubernetes.io/name: microservices-starter-kit
+    app.kubernetes.io/managed-by: kubectl
